@@ -2,17 +2,23 @@
 (so basically, Redux without React), 
 so that I can understand Redux in isolation first. */
 
-import { createStore } from "redux";
+import { combineReducers, createStore } from "redux";
 
 // 1. Create an initialState Object
-const initialState = {
+const initialStateAccount = {
   balance: 0,
   loan: 0,
   loanPurpose: "",
 };
 
+const initialStateCustomer = {
+  fullname: "",
+  nationalID: "",
+  createdAt: "",
+};
+
 // 2. Define the reducer() function
-function reducer(state = initialState, action) {
+function accountReducer(state = initialStateAccount, action) {
   // 3. Define the action.type(s) and define what are they gonna return
   switch (action.type) {
     case "account/deposit":
@@ -41,7 +47,14 @@ function reducer(state = initialState, action) {
   }
 }
 
-const store = createStore(reducer);
+// 4. Create store
+
+//here I'm cobining the reducers
+const rootReducer = combineReducers({
+  account: accountReducer,
+  customer: customerReducer,
+});
+const store = createStore(rootReducer);
 
 // Without action creators functions
 // store.dispatch({ type: "account/deposit", payload: 500 });
@@ -59,7 +72,7 @@ const store = createStore(reducer);
 // store.dispatch({ type: "account/payLoan" });
 // console.log(store.getState());
 
-// ACTION CREATORS FUNCTIONS
+// 5. ACTION CREATORS FUNCTIONS
 
 function deposit(amount) {
   return { type: "account/deposit", payload: amount };
@@ -91,3 +104,30 @@ console.log(store.getState());
 
 store.dispatch(payLoan());
 console.log(store.getState());
+
+function customerReducer(state = initialStateCustomer, action) {
+  switch (action.type) {
+    case "customer/createCustomer":
+      return {
+        ...state,
+        fullName: action.payload.fullName,
+        nationalID: action.payload.nationalID,
+        createdAt: action.payload.createdAt,
+      };
+    case "customer/updateName":
+      return { ...state, fullName: action.payload };
+    default:
+      return state;
+  }
+}
+
+function createCustomer(fullName, nationalID) {
+  return {
+    type: "customer/createCustomer",
+    payload: { fullName, nationalID, createdAt: new Date().toISOString() },
+  };
+}
+
+function updateName(fullName) {
+  return { type: "customer/updateName", payload: fullName };
+}
